@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         scannerHome = tool name: 'SonarQube Scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-        sonarToken = credentials('sonar-token') // SonarQube token stored in Jenkins credentials
+        sonarToken = credentials('squ_8bab964dcbbf6aaa0c5947be873fe228b6584db3') // SonarQube token stored in Jenkins credentials
     }
 
     stages {
