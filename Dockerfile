@@ -1,18 +1,21 @@
-FROM adoptopenjdk/openjdk11:alpine-slim as build
-WORKDIR /workspace/app
+# Use the official Python image from the Docker Hub
+FROM python:3.8-slim
 
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-COPY src src
+# Set the working directory in the container
+WORKDIR /app
 
-RUN ./mvnw install -DskipTests
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
+# Copy the requirements file into the container
+COPY requirements.txt requirements.txt
 
-FROM adoptopenjdk/openjdk11:alpine-slim
-VOLUME /tmp
-ARG DEPENDENCY=/workspace/app/target/dependency
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-Dserver.port=${PORT}","-cp","app:app/lib/*","com.example.demo.DemoApplication"]
+# Install the dependencies
+RUN pip install -r requirements.txt
+
+# Copy the rest of the application code into the container
+COPY . .
+
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
+
+# Define the command to run the application
+CMD ["python", "app.py"]
+

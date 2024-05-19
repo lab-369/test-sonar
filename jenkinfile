@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    environment {
+        sonarToken = credentials('squ_8bab964dcbbf6aaa0c5947be873fe228b6584db3')
+        dockerImage = ''
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', credentialsId: 'your-github-credentials-id', url: 'https://github.com/your_github_username/your_repository.git'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build "hello-world-app"
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        # Install SonarQube Scanner
+                        wget -qO- https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip | busybox unzip - && mv sonar-scanner-4.6.2.2472-linux sonar-scanner && ./sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.projectKey=your_project_key \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.login=${sonarToken}
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Docker Image') {
+            steps {
+                script {
+                    dockerImage.run('-d -p 5000:5000')
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+
