@@ -1,0 +1,17 @@
+pipeline {
+    agent { label 'linux' }
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building on a Linux node'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing on a Linux node'
+            }
+        }
+    }
+}
+
